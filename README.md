@@ -1,109 +1,106 @@
 # EADProject
 project Online learning Management System Using React Express.js and MonogDb 
+Online Learning Management System (LMS)
+📌 Project Title
 
+EADProject - Online Learning Management System
 
-->Project Title:
-OnlineLearn - Online Learning Management System
+📖 Project Description
 
-->Project Description:
-OnlineLearn is a full-stack Learning Management System (LMS) that allows students and teachers to interact through courses, videos, assignments, quizzes, and progress tracking. The system provides role-based access for students, teachers, and admins, with secure authentication and database integration.
+This project is a Full Stack Learning Management System (LMS) built using the MERN Stack (MongoDB, Express, React, Node.js).
 
-->Features:
-User authentication (Student / Teacher / Admin)
-Course creation and enrollment
-Video lectures management
-Assignment submission and grading
-Quiz system
-Student progress tracking
-Course reviews and ratings
-Secure password encryption (bcrypt)
-RESTful API integration with frontend
-CRUD operations for all major modules
+It allows teachers to create and manage courses, and students to enroll, learn, and track their progress in an organized digital platform.
 
-->Technologies Used:
+The system simplifies online education by providing a centralized platform for course management, user roles, and learning activities.
 
-->Frontend:
+✨ Features
+👨‍🎓 Student Features
+Register and login system
+Browse available courses
+Enroll in courses
+View course content
+Track learning progress
+👨‍🏫 Teacher Features
+Create and manage courses
+Upload course content (videos, notes, etc.)
+View enrolled students
+Manage assignments and quizzes
+🔐 Admin Features
+Manage users (students & teachers)
+Manage all courses
+Monitor system activity
+⚙️ General Features
+Role-based authentication (Student / Teacher / Admin)
+Secure login system with password encryption
+RESTful API integration
+CRUD operations (Create, Read, Update, Delete)
+Responsive UI design
+🛠️ Technologies Used
+Frontend:
 React JS
+HTML5
+CSS3
+JavaScript
 React Router
-Context API / Redux (if used)
-Axios
-HTML, CSS, JavaScript
-
-cd frontend
-npm install
-npm start
-
-->Backend:
+Backend:
 Node.js
 Express.js
 MongoDB
 Mongoose
-bcryptjs
-dotenv
-cors
-
+JWT Authentication
+Bcrypt.js
+📁 Project Structure
+EADProject/
+│
+├── backend/
+│   ├── models/
+│   ├── routes/
+│   ├── controllers/
+│   ├── database.js
+│   └── server.js
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── context/
+│   │   └── App.js
+│
+└── README.md
+⚙️ Installation & Setup Instructions
+1️⃣ Clone the Repository
+git clone https://github.com/ayazahmedbscsf23-art/EADProject.git
+cd EADProject
+2️⃣ Backend Setup
 cd backend
 npm install
-npm run dev
-http://localhost:5000
 
+Create .env file:
 
-->Database Setup Instructions:
-
-Install MongoDB locally
-Create a database 
-Add connection string in .env file:
-MONGO_URI=mongodb://localhost:27017/onlinelearn
 PORT=5000
-JWT_SECRET=your_secret_key
-
-->Environment Variables:
-
-Create a .env file in the backend folder:
 MONGO_URI=your_mongodb_connection_string
-PORT=5000
 JWT_SECRET=your_secret_key
 
-->Step-by-step instructions to run the project:
+Run backend server:
 
-git clone https://github.com/your-username/onlinelearn-lms.git
-
-->Backend
-cd onlinelearn
-cd backend
-npm install
-npm run dev
-
-->Frontend
+npm start
+3️⃣ Frontend Setup
 cd frontend
 npm install
 npm start
 
-How to Use the System
+Frontend will run on:
 
-After running the project, you can use the LMS with different user roles: Admin/Teacher and Student.
+http://localhost:3000
+🔄 API Features (Backend)
+User Authentication (Register/Login)
+Course Management APIs
+Enrollment System APIs
+Quiz & Assignment APIs
+Progress Tracking APIs
 
-Student Flow:
-Create a new student account (Sign Up page)
-Login with your credentials
-Browse available courses
-Enroll in any course
-Watch course videos and complete assignments
-Attempt quizzes (if available)
-Track your learning progress in the dashboard
-
-Teacher Flow:
-Create a teacher account (Sign Up page)
-Login with teacher credentials
-Create new courses
-Upload course videos and learning materials
-Create assignments and quizzes for students
-View enrolled students
-Review student progress and submissions
-
-Authentication Note:
-If you are not registered, first create an account by clicking on the Sign Up option.
-After registration, log in using your email and password to access the system.
-Without login, you will not be able to enroll in courses or access dashboard features.
-
-
+🧪 CRUD Operations Demonstrated
+➕ Create: Users, Courses, Assignments
+📖 Read: Courses, User Data, Enrollments
+✏️ Update: Course updates, profile updates
+❌ Delete: Courses, users, assignments
