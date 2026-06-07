@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduLearn LMS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0f1117;
+    --bg2:      #1a1d2e;
+    --bg3:      #252840;
+    --card:     #1e2235;
+    --border:   #2e3350;
+    --primary:  #6c63ff;
+    --primary2: #8b85ff;
+    --accent:   #00d4aa;
+    --danger:   #ff5e5e;
+    --warn:     #ffb347;
+    --text:     #e8eaf6;
+    --text2:    #9ca3c8;
+    --text3:    #6b7298;
+    --radius:   10px;
+  }
+
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* ── Animations ── */
+  @keyframes fadeIn    { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideIn   { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes pulse     { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+  @keyframes spin      { to { transform: rotate(360deg); } }
+
+  .fade-in    { animation: fadeIn .3s ease both; }
+  .slide-in   { animation: slideIn .25s ease both; }
+
+  /* ── Layout ── */
+  .app          { display: flex; height: 100vh; overflow: hidden; }
+  .main-area    { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 230px; min-width: 230px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    padding: 0; height: 100vh; overflow: hidden;
+    transition: width .3s;
+  }
+  .logo-wrap {
+    padding: 1.2rem 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 38px; height: 38px; background: var(--primary);
+    border-radius: 9px; display: flex; align-items: center;
+    justify-content: center; font-size: 20px; flex-shrink: 0;
+  }
+  .logo-text { font-size: 16px; font-weight: 700; color: var(--primary2); }
+
+  .nav-section { padding: .5rem 0; flex: 1; }
+  .nav-label {
+    font-size: 10px; font-weight: 600; color: var(--text3);
+    padding: .6rem 1.1rem .3rem; text-transform: uppercase; letter-spacing: .08em;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: .58rem 1.1rem; cursor: pointer;
+    color: var(--text2); font-size: 13.5px; font-weight: 500;
+    border-right: 3px solid transparent;
+    transition: background .15s, color .15s;
+    user-select: none;
+  }
+  .nav-item:hover { background: rgba(108,99,255,.08); color: var(--text); }
+  .nav-item.active {
+    background: rgba(108,99,255,.15);
+    color: var(--primary2);
+    border-right-color: var(--primary);
+  }
+  .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .user-chip {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg3); border-radius: 8px; padding: .6rem .8rem;
+    margin-bottom: 10px;
+  }
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--primary); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .user-name  { font-size: 13px; font-weight: 600; }
+  .user-role  {
+    font-size: 10px; color: var(--text3);
+    text-transform: capitalize; margin-top: 1px;
+  }
+
+  /* ── Topbar ── */
+  .topbar {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: .8rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 20;
+    flex-shrink: 0;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .page-title  { font-size: 15px; font-weight: 600; }
+  .breadcrumb  { font-size: 12px; color: var(--text3); }
+
+  /* ── Buttons ── */
+  .btn {
+    padding: .48rem 1.1rem; border-radius: 8px; border: none;
+    cursor: pointer; font-size: 13px; font-weight: 600;
+    transition: opacity .15s, transform .1s; display: inline-flex;
+    align-items: center; gap: 6px;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn-primary  { background: var(--primary); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--primary2); }
+  .btn-accent   { background: var(--accent); color: #0f1117; }
+  .btn-danger   { background: rgba(255,94,94,.15); color: var(--danger); border: 1px solid rgba(255,94,94,.3); }
+  .btn-ghost    { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--primary); color: var(--primary2); }
+  .btn-sm       { padding: .32rem .75rem; font-size: 12px; }
+
+  /* ── Inputs ── */
+  .input {
+    width: 100%; background: var(--bg3);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: .6rem .9rem; color: var(--text);
+    outline: none; font-size: 13px; font-family: inherit;
+    transition: border-color .2s;
+  }
+  .input:focus { border-color: var(--primary); }
+  .input.error  { border-color: var(--danger); }
+  .input-group  { margin-bottom: 14px; }
+  .input-label  { font-size: 12px; color: var(--text2); margin-bottom: 5px; display: block; font-weight: 500; }
+  .error-msg    { font-size: 11px; color: var(--danger); margin-top: 4px; }
+
+  select.input { cursor: pointer; }
+  textarea.input { resize: vertical; min-height: 70px; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem;
+    transition: border-color .2s, transform .2s;
+  }
+  .card-hover { cursor: pointer; }
+  .card-hover:hover { border-color: var(--primary); transform: translateY(-2px); }
+
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .stat-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+  }
+  .stat-val   { font-size: 26px; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+  /* ── Grids ── */
+  .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+
+  /* ── Badges ── */
+  .badge {
+    padding: 2px 9px; border-radius: 5px;
+    font-size: 11px; font-weight: 700; display: inline-block;
+  }
+  .badge-green  { background: rgba(0,212,170,.15); color: var(--accent); }
+  .badge-purple { background: rgba(108,99,255,.2);  color: var(--primary2); }
+  .badge-warn   { background: rgba(255,179,71,.15); color: var(--warn); }
+  .badge-danger { background: rgba(255,94,94,.15);  color: var(--danger); }
+
+  /* ── List items ── */
+  .list-item {
+    padding: .75rem 1rem; background: var(--bg3);
+    border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 8px; display: flex;
+    justify-content: space-between; align-items: center;
+    transition: border-color .2s;
+  }
+  .list-item:hover { border-color: var(--primary); }
+
+  /* ── Login ── */
+  .login-screen {
+    min-height: 100vh; display: flex;
+    align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 20% 50%, rgba(108,99,255,.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(0,212,170,.05) 0%, transparent 50%),
+                var(--bg);
+  }
+  .login-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 18px; padding: 2.5rem; width: 420px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  }
+  .tab-row {
+    display: flex; background: var(--bg3);
+    border-radius: 9px; padding: 4px; margin-bottom: 1.5rem;
+  }
+  .tab-btn {
+    flex: 1; padding: 9px; border-radius: 7px; border: none;
+    cursor: pointer; font-size: 13px; font-weight: 600;
+    transition: background .2s, color .2s; font-family: inherit;
+  }
+  .tab-btn.active   { background: var(--primary); color: #fff; }
+  .tab-btn.inactive { background: transparent; color: var(--text2); }
+  .tab-btn.inactive:hover { color: var(--text); }
+
+  .role-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .role-btn {
+    flex: 1; padding: 9px; border-radius: 9px; cursor: pointer;
+    font-size: 13px; font-weight: 600; transition: all .2s;
+    font-family: inherit;
+  }
+  .role-btn.active   {
+    background: rgba(108,99,255,.2);
+    border: 1px solid var(--primary); color: var(--primary2);
+  }
+  .role-btn.inactive {
+    background: transparent;
+    border: 1px solid var(--border); color: var(--text2);
+  }
+
+  /* ── Toast ── */
+  .toast-container {
+    position: fixed; top: 18px; right: 18px;
+    z-index: 9999; display: flex; flex-direction: column; gap: 9px;
+    pointer-events: none;
+  }
+  .toast {
+    padding: 12px 18px; border-radius: 10px;
+    font-weight: 600; font-size: 13px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.45);
+    animation: slideIn .25s ease;
+    pointer-events: auto; max-width: 320px;
+    display: flex; align-items: center; gap: 9px;
+  }
+  .toast-success { background: #00d4aa; color: #0f1117; }
+  .toast-error   { background: #ff5e5e; color: #fff; }
+  .toast-warn    { background: #ffb347; color: #0f1117; }
+
+  /* ── Tabs (course detail) ── */
+  .tabs-row { display: flex; gap: 6px; margin-bottom: 20px; }
+  .detail-tab {
+    padding: 8px 18px; border-radius: 9px; border: none;
+    cursor: pointer; font-size: 13px; font-weight: 600;
+    transition: all .2s; font-family: inherit;
+  }
+  .detail-tab.active   { background: var(--primary); color: #fff; }
+  .detail-tab.inactive { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+  .detail-tab.inactive:hover { color: var(--text); border-color: var(--primary); }
+
+  /* ── Spinner ── */
+  .spinner {
+    width: 22px; height: 22px; border: 3px solid var(--border);
+    border-top-color: var(--primary); border-radius: 50%;
+    animation: spin .7s linear infinite; margin: 40px auto;
+  }
+
+  /* ── Search ── */
+  .search-box {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 9px; padding: 8px 14px;
+    color: var(--text); outline: none;
+    font-size: 13px; font-family: inherit; width: 240px;
+    transition: border-color .2s;
+  }
+  .search-box:focus { border-color: var(--primary); }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; color: var(--text3); padding: 60px 20px; }
+  .empty-icon { font-size: 52px; margin-bottom: 14px; }
+  .empty p    { font-size: 14px; }
+
+  /* ── Add-form dashed card ── */
+  .add-card {
+    background: transparent;
+    border: 1.5px dashed var(--primary);
+    border-radius: var(--radius); padding: 1.25rem;
+  }
+
+  /* ── Content padding ── */
+  .content { padding: 1.5rem; animation: fadeIn .3s ease; }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    height: 5px; border-radius: 3px; background: var(--border);
+    overflow: hidden; margin-top: 8px;
+  }
+  .progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: width .5s; }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.2rem 0; }
+
+  /* ── Section heading ── */
+  .section-heading {
+    font-size: 12px; font-weight: 600; color: var(--text3);
+    text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useContext, createContext, useCallback, useRef } = React;
+
+// ─────────────────────────────────────────────
+//  Config
+// ─────────────────────────────────────────────
+const API = 'http://localhost:5000/api';
+
+// ─────────────────────────────────────────────
+//  Auth Context
+// ─────────────────────────────────────────────
+const AuthContext = createContext(null);
+const useAuth = () => useContext(AuthContext);
+
+function AuthProvider({ children }) {
+  const [user, setUser] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('edu_user')) || null; }
+    catch { return null; }
+  });
+
+  const login  = (u) => { setUser(u); sessionStorage.setItem('edu_user', JSON.stringify(u)); };
+  const logout = ()  => { setUser(null); sessionStorage.removeItem('edu_user'); };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Toast Context
+// ─────────────────────────────────────────────
+const ToastContext = createContext(null);
+const useToast = () => useContext(ToastContext);
+
+function ToastProvider({ children }) {
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = useCallback((msg, type = 'success') => {
+    const id = Date.now() + Math.random();
+    setToasts(t => [...t, { id, msg, type }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3600);
+  }, []);
+
+  const icons = { success: '✓', error: '✕', warn: '⚠' };
+
+  return (
+    <ToastContext.Provider value={addToast}>
+      {children}
+      <div className="toast-container">
+        {toasts.map(t => (
+          <div key={t.id} className={`toast toast-${t.type}`}>
+            <span>{icons[t.type]}</span>
+            {t.msg}
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Reusable: FormInput
+// ─────────────────────────────────────────────
+function FormInput({ label, value, onChange, type = 'text', placeholder, error, as: Tag = 'input', children, ...rest }) {
+  return (
+    <div className="input-group">
+      {label && <label className="input-label">{label}</label>}
+      {Tag === 'select' ? (
+        <select className={`input ${error ? 'error' : ''}`} value={value} onChange={onChange} {...rest}>
+          {children}
+        </select>
+      ) : Tag === 'textarea' ? (
+        <textarea className={`input ${error ? 'error' : ''}`} value={value}
+          onChange={onChange} placeholder={placeholder} {...rest} />
+      ) : (
+        <input className={`input ${error ? 'error' : ''}`} type={type}
+          value={value} onChange={onChange} placeholder={placeholder} {...rest} />
+      )}
+      {error && <div className="error-msg">{error}</div>}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Spinner
+// ─────────────────────────────────────────────
+function Spinner() { return <div className="spinner" />; }
+
+// ─────────────────────────────────────────────
+//  Page: Login / Register
+// ─────────────────────────────────────────────
+function LoginPage() {
+  const { login } = useAuth();
+  const addToast  = useToast();
+
+  const [tab,  setTab]  = useState('login');      // 'login' | 'register'
+  const [role, setRole] = useState('student');
+  const [loading, setLoading] = useState(false);
+
+  const [form, setForm] = useState({
+    name: '', email: '', password: '', confirm: ''
+  });
+  const [errors, setErrors] = useState({});
+
+  const set = (k) => (e) => {
+    setForm(f => ({ ...f, [k]: e.target.value }));
+    setErrors(err => ({ ...err, [k]: '' }));
+  };
+
+  const validate = () => {
+    const e = {};
+    if (tab === 'register' && !form.name.trim())      e.name    = 'Full name is required';
+    if (!form.email.trim())                            e.email   = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(form.email))        e.email   = 'Enter a valid email address';
+    if (!form.password)                                e.password = 'Password is required';
+    else if (form.password.length < 6)                 e.password = 'Password must be at least 6 characters';
+    if (tab === 'register' && form.password !== form.confirm)
+                                                       e.confirm = 'Passwords do not match';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    setLoading(true);
+    try {
+      if (tab === 'login') {
+        const res  = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: form.email.trim().toLowerCase(), password: form.password })
+        });
+        const data = await res.json();
+        if (!res.ok) { addToast(data.message || 'Login failed', 'error'); return; }
+        login(data);
+        addToast(`Welcome back, ${data.name}! 👋`, 'success');
+      } else {
+        const res  = await fetch(`${API}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: form.name.trim(), email: form.email.trim().toLowerCase(),
+            password: form.password, role
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) { addToast(data.message || 'Registration failed', 'error'); return; }
+        addToast('Account created! Please sign in.', 'success');
+        setTab('login');
+        setForm(f => ({ ...f, name: '', password: '', confirm: '' }));
+      }
+    } catch {
+      addToast('Cannot connect to server. Make sure the backend is running on port 5000.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onKey = (e) => { if (e.key === 'Enter') handleSubmit(); };
+
+  return (
+    <div className="login-screen">
+      <div className="login-card fade-in">
+
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 26 }}>
+          <div style={{ fontSize: 44, marginBottom: 8 }}>🎓</div>
+          <h2 style={{ color: 'var(--primary2)', marginBottom: 4 }}>EduLearn LMS</h2>
+          <p style={{ color: 'var(--text3)', fontSize: 13 }}>Learning Management System</p>
+        </div>
+
+        {/* Login / Register tabs */}
+        <div className="tab-row">
+          {['login', 'register'].map(t => (
+            <button key={t}
+              className={`tab-btn ${tab === t ? 'active' : 'inactive'}`}
+              onClick={() => { setTab(t); setErrors({}); }}
+            >
+              {t === 'login' ? '🔑 Sign In' : '✨ Register'}
+            </button>
+          ))}
+        </div>
+
+        {/* Role selector (register only) */}
+        {tab === 'register' && (
+          <div className="role-row">
+            {[['student','👤 Student'],['teacher','👨‍🏫 Teacher']].map(([r, label]) => (
+              <button key={r}
+                className={`role-btn ${role === r ? 'active' : 'inactive'}`}
+                onClick={() => setRole(r)}
+              >{label}</button>
+            ))}
+          </div>
+        )}
+
+        {/* Fields */}
+        {tab === 'register' && (
+          <FormInput label="Full Name" value={form.name} onChange={set('name')}
+            placeholder="e.g. Ali Hassan" error={errors.name} onKeyDown={onKey} />
+        )}
+        <FormInput label="Email Address" type="email" value={form.email} onChange={set('email')}
+          placeholder="you@example.com" error={errors.email} onKeyDown={onKey} />
+        <FormInput label="Password" type="password" value={form.password} onChange={set('password')}
+          placeholder="Minimum 6 characters" error={errors.password} onKeyDown={onKey} />
+        {tab === 'register' && (
+          <FormInput label="Confirm Password" type="password" value={form.confirm} onChange={set('confirm')}
+            placeholder="Re-enter password" error={errors.confirm} onKeyDown={onKey} />
+        )}
+
+        <button className="btn btn-primary" style={{ width: '100%', padding: '11px', fontSize: 14 }}
+          onClick={handleSubmit} disabled={loading}>
+          {loading
+            ? <><span style={{ animation: 'spin .7s linear infinite', display:'inline-block' }}>⟳</span> Please wait…</>
+            : tab === 'login' ? 'Sign In' : 'Create Account'
+          }
+        </button>
+
+        {tab === 'login' && (
+          <p style={{ textAlign:'center', marginTop:14, fontSize:12, color:'var(--text3)' }}>
+            Don't have an account?{' '}
+            <span style={{ color:'var(--primary2)', cursor:'pointer' }}
+              onClick={() => { setTab('register'); setErrors({}); }}>
+              Register here
+            </span>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Sidebar
+// ─────────────────────────────────────────────
+function Sidebar({ page, navigate }) {
+  const { user, logout } = useAuth();
+
+  const navItems = [
+    { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+    { id: 'courses',   icon: '📚', label: 'Courses'   },
+    ...(user?.role === 'teacher' ? [{ id: 'manage', icon: '🛠️', label: 'Manage Courses' }] : []),
+  ];
+
+  return (
+    <aside className="sidebar">
+      <div className="logo-wrap">
+        <div className="logo-icon">🎓</div>
+        <span className="logo-text">EduLearn</span>
+      </div>
+
+      <div className="nav-section">
+        <div className="nav-label">Navigation</div>
+        {navItems.map(n => (
+          <div key={n.id}
+            className={`nav-item ${page === n.id ? 'active' : ''}`}
+            onClick={() => navigate(n.id)}
+          >
+            <span className="nav-icon">{n.icon}</span>
+            {n.label}
+          </div>
+        ))}
+      </div>
+
+      <div className="sidebar-footer">
+        <div className="user-chip">
+          <div className="user-avatar">
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div className="user-name">{user?.name}</div>
+            <div className="user-role">{user?.role}</div>
+          </div>
+        </div>
+        <button className="btn btn-ghost" style={{ width:'100%', justifyContent:'center', color:'var(--danger)', borderColor:'rgba(255,94,94,.3)' }}
+          onClick={logout}>
+          🚪 Logout
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Topbar
+// ─────────────────────────────────────────────
+function Topbar({ title, breadcrumb }) {
+  const today = new Date().toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+  return (
+    <div className="topbar">
+      <div className="topbar-left">
+        {breadcrumb && (
+          <span className="breadcrumb">{breadcrumb} /</span>
+        )}
+        <span className="page-title">{title}</span>
+      </div>
+      <span style={{ fontSize:12, color:'var(--text3)' }}>{today}</span>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Page: Dashboard
+// ─────────────────────────────────────────────
+function DashboardPage({ courses }) {
+  const { user } = useAuth();
+  const addToast  = useToast();
+  const [stats, setStats]     = useState({ users:0, courses:0, videos:0, quizzes:0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API}/stats`)
+      .then(r => r.json())
+      .then(d => { setStats(d); setLoading(false); })
+      .catch(() => { addToast('Could not load stats', 'warn'); setLoading(false); });
+  }, []);
+
+  const cards = [
+    { icon:'📚', label:'Total Courses',  val: stats.courses, color:'#6c63ff' },
+    { icon:'🎥', label:'Total Videos',   val: stats.videos,  color:'#00d4aa' },
+    { icon:'🧠', label:'Total Quizzes',  val: stats.quizzes, color:'#ffb347' },
+    { icon:'👥', label:'Registered Users', val: stats.users, color:'#ff5e5e' },
+  ];
+
+  return (
+    <div className="content">
+      <h2 style={{ marginBottom:4 }}>Welcome back, {user.name}! 👋</h2>
+      <p style={{ color:'var(--text2)', fontSize:13, marginBottom:26 }}>
+        Here's your platform overview.
+      </p>
+
+      {loading ? <Spinner /> : (
+        <>
+          {/* Stats grid */}
+          <div className="grid-4" style={{ marginBottom:28 }}>
+            {cards.map(c => (
+              <div key={c.label} className="stat-card">
+                <div className="stat-icon" style={{ background:`${c.color}22` }}>{c.icon}</div>
+                <div>
+                  <div className="stat-val">{c.val ?? '—'}</div>
+                  <div className="stat-label">{c.label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Recent courses */}
+          <div className="section-heading">Recent Courses</div>
+          {courses.length === 0
+            ? <div className="empty"><div className="empty-icon">📭</div><p>No courses yet.</p></div>
+            : (
+              <div className="grid-3">
+                {courses.slice(0, 6).map(c => (
+                  <div key={c._id} className="card">
+                    <div style={{ fontWeight:600, marginBottom:6 }}>{c.title}</div>
+                    <div style={{ fontSize:12, color:'var(--text2)', marginBottom:10 }}>
+                      👨‍🏫 {c.teacher}
+                    </div>
+                    {c.description && (
+                      <div style={{ fontSize:12, color:'var(--text3)', marginBottom:10, lineHeight:1.5 }}>
+                        {c.description.slice(0,80)}{c.description.length>80?'…':''}
+                      </div>
+                    )}
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                      <span className="badge badge-green">{c.category}</span>
+                      <span style={{ color:'var(--primary2)', fontWeight:700, fontSize:13 }}>{c.price}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          }
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Page: Courses (Student view — browse only)
+// ─────────────────────────────────────────────
+function CoursesPage({ courses, onCourseClick }) {
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('All');
+
+  const categories = ['All', ...Array.from(new Set(courses.map(c => c.category).filter(Boolean)))];
+
+  const filtered = courses.filter(c => {
+    const matchSearch = c.title.toLowerCase().includes(search.toLowerCase()) ||
+                        c.teacher.toLowerCase().includes(search.toLowerCase()) ||
+                        c.category.toLowerCase().includes(search.toLowerCase());
+    const matchCat    = filter === 'All' || c.category === filter;
+    return matchSearch && matchCat;
+  });
+
+  return (
+    <div className="content">
+      {/* Search + filter bar */}
+      <div style={{ display:'flex', gap:10, alignItems:'center', marginBottom:22, flexWrap:'wrap' }}>
+        <input className="search-box" value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="🔍  Search courses, teachers…" />
+        <div style={{ display:'flex', gap:6, flexWrap:'wrap' }}>
+          {categories.map(cat => (
+            <button key={cat}
+              onClick={() => setFilter(cat)}
+              style={{
+                padding:'6px 14px', borderRadius:8, border:'none',
+                background: filter===cat ? 'var(--primary)' : 'var(--bg3)',
+                color: filter===cat ? '#fff' : 'var(--text2)',
+                cursor:'pointer', fontSize:12, fontWeight:600
+              }}
+            >{cat}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
+        <h3 style={{ fontSize:14, color:'var(--text2)' }}>
+          {filtered.length} course{filtered.length !== 1 ? 's' : ''} found
+        </h3>
+      </div>
+
+      {filtered.length === 0
+        ? <div className="empty"><div className="empty-icon">🔎</div><p>No courses match your search.</p></div>
+        : (
+          <div className="grid-3">
+            {filtered.map(c => (
+              <div key={c._id} className="card card-hover" onClick={() => onCourseClick(c)}>
+                {/* Thumbnail placeholder */}
+                <div style={{
+                  height:100, borderRadius:8, marginBottom:12,
+                  background:`linear-gradient(135deg, ${stringToColor(c.category)}33, ${stringToColor(c.title)}22)`,
+                  display:'flex', alignItems:'center', justifyContent:'center', fontSize:36
+                }}>
+                  {categoryIcon(c.category)}
+                </div>
+                <h3 style={{ fontSize:14, marginBottom:5, lineHeight:1.4 }}>{c.title}</h3>
+                {c.description && (
+                  <p style={{ fontSize:12, color:'var(--text3)', marginBottom:8, lineHeight:1.5 }}>
+                    {c.description.slice(0,70)}{c.description.length>70?'…':''}
+                  </p>
+                )}
+                <p style={{ fontSize:12, color:'var(--text2)', marginBottom:12 }}>
+                  👨‍🏫 {c.teacher}
+                </p>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                  <span className="badge badge-green">{c.category}</span>
+                  <span style={{ color:'var(--primary2)', fontWeight:700, fontSize:13 }}>{c.price}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      }
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Page: Manage Courses (Teacher)
+// ─────────────────────────────────────────────
+function ManagePage({ courses, fetchCourses, onCourseClick }) {
+  const { user }  = useAuth();
+  const addToast  = useToast();
+
+  const [form, setForm] = useState({ title:'', category:'', description:'', price:'Free' });
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving]  = useState(false);
+
+  const myCourses = courses.filter(c => c.teacherId === user._id || c.teacher === user.name);
+
+  const set = k => e => { setForm(f=>({...f,[k]:e.target.value})); setErrors(er=>({...er,[k]:''})); };
+
+  const validate = () => {
+    const e = {};
+    if (!form.title.trim())    e.title    = 'Course title is required';
+    if (!form.category.trim()) e.category = 'Category is required';
+    setErrors(e);
+    return !Object.keys(e).length;
+  };
+
+  const handleCreate = async () => {
+    if (!validate()) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`${API}/courses`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ ...form, teacher: user.name, teacherId: user._id })
+      });
+      if (!res.ok) throw new Error();
+      addToast('Course created successfully! 🎉', 'success');
+      setForm({ title:'', category:'', description:'', price:'Free' });
+      await fetchCourses();
+    } catch {
+      addToast('Failed to create course', 'error');
+    } finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id, title) => {
+    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    try {
+      await fetch(`${API}/courses/${id}`, { method:'DELETE' });
+      addToast('Course deleted', 'warn');
+      fetchCourses();
+    } catch {
+      addToast('Failed to delete course', 'error');
+    }
+  };
+
+  return (
+    <div className="content">
+      <div className="grid-3" style={{ alignItems:'start' }}>
+
+        {/* Create form */}
+        <div className="add-card">
+          <h3 style={{ marginBottom:16, fontSize:15 }}>➕ Create New Course</h3>
+          <FormInput label="Course Title *" value={form.title} onChange={set('title')}
+            placeholder="e.g. React from Scratch" error={errors.title} />
+          <FormInput label="Category *" value={form.category} onChange={set('category')}
+            placeholder="e.g. Web Development" error={errors.category} />
+          <FormInput label="Description" as="textarea" value={form.description}
+            onChange={set('description')} placeholder="Short course description…" />
+          <FormInput label="Price" as="select" value={form.price} onChange={set('price')}>
+            <option>Free</option>
+            <option>$9.99</option>
+            <option>$14.99</option>
+            <option>$19.99</option>
+            <option>$29.99</option>
+            <option>$49.99</option>
+          </FormInput>
+          <button className="btn btn-primary" style={{ width:'100%', justifyContent:'center' }}
+            onClick={handleCreate} disabled={saving}>
+            {saving ? '⟳ Creating…' : 'Create Course'}
+          </button>
+        </div>
+
+        {/* My courses list */}
+        <div style={{ gridColumn:'span 2' }}>
+          <div className="section-heading">Your Courses ({myCourses.length})</div>
+          {myCourses.length === 0
+            ? <div className="empty"><div className="empty-icon">🗂️</div><p>You haven't created any courses yet.</p></div>
+            : myCourses.map(c => (
+              <div key={c._id} className="list-item">
+                <div style={{ cursor:'pointer' }} onClick={() => onCourseClick(c)}>
+                  <div style={{ fontWeight:600, marginBottom:2 }}>{c.title}</div>
+                  <div style={{ fontSize:12, color:'var(--text3)' }}>
+                    <span className="badge badge-green" style={{ marginRight:6 }}>{c.category}</span>
+                    {c.price}
+                  </div>
+                </div>
+                <div style={{ display:'flex', gap:8, flexShrink:0 }}>
+                  <button className="btn btn-ghost btn-sm" onClick={() => onCourseClick(c)}>
+                    ✏️ Edit
+                  </button>
+                  <button className="btn btn-danger btn-sm"
+                    onClick={() => handleDelete(c._id, c.title)}>
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Page: Course Detail
+// ─────────────────────────────────────────────
+function CourseDetailPage({ course, onBack }) {
+  const { user } = useAuth();
+  const addToast  = useToast();
+  const isTeacher = user.role === 'teacher';
+
+  const [details, setDetails] = useState({ vids:[], assigns:[], quizzes:[] });
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab]         = useState('videos');
+
+  // Sub-entity forms
+  const [videoForm,  setVideoForm]  = useState({ title:'', duration:'', videoUrl:'' });
+  const [assignForm, setAssignForm] = useState({ title:'', description:'', points:100, dueDate:'' });
+  const [quizForm,   setQuizForm]   = useState({ title:'' });
+  const [editCourse, setEditCourse] = useState(false);
+  const [courseForm, setCourseForm] = useState({ title:course.title, description:course.description||'', price:course.price });
+
+  const [vErrors, setVErrors] = useState({});
+  const [aErrors, setAErrors] = useState({});
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      fetch(`${API}/videos/${course._id}`).then(r=>r.json()),
+      fetch(`${API}/assignments/${course._id}`).then(r=>r.json()),
+      fetch(`${API}/quizzes/${course._id}`).then(r=>r.json()),
+    ]).then(([vids, assigns, quizzes]) => {
+      setDetails({ vids, assigns, quizzes });
+      setLoading(false);
+    }).catch(() => {
+      addToast('Failed to load course content', 'error');
+      setLoading(false);
+    });
+  }, [course._id]);
+
+  // ── Video add ──
+  const addVideo = async () => {
+    const e = {};
+    if (!videoForm.title)    e.title    = 'Title is required';
+    if (!videoForm.videoUrl) e.videoUrl = 'Video URL is required';
+    setVErrors(e);
+    if (Object.keys(e).length) return;
+    try {
+      const res  = await fetch(`${API}/videos`, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ ...videoForm, courseId: course._id }) });
+      const data = await res.json();
+      setDetails(d => ({ ...d, vids:[...d.vids, data] }));
+      setVideoForm({ title:'', duration:'', videoUrl:'' });
+      addToast('Video added!', 'success');
+    } catch { addToast('Failed to add video', 'error'); }
+  };
+
+  // ── Assignment add ──
+  const addAssignment = async () => {
+    const e = {};
+    if (!assignForm.title) e.title = 'Title is required';
+    setAErrors(e);
+    if (Object.keys(e).length) return;
+    try {
+      const res  = await fetch(`${API}/assignments`, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ ...assignForm, courseId: course._id }) });
+      const data = await res.json();
+      setDetails(d => ({ ...d, assigns:[...d.assigns, data] }));
+      setAssignForm({ title:'', description:'', points:100, dueDate:'' });
+      addToast('Assignment added!', 'success');
+    } catch { addToast('Failed to add assignment', 'error'); }
+  };
+
+  // ── Quiz add ──
+  const addQuiz = async () => {
+    if (!quizForm.title.trim()) { addToast('Quiz title is required', 'error'); return; }
+    try {
+      const res  = await fetch(`${API}/quizzes`, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ ...quizForm, courseId: course._id, questions:[] }) });
+      const data = await res.json();
+      setDetails(d => ({ ...d, quizzes:[...d.quizzes, data] }));
+      setQuizForm({ title:'' });
+      addToast('Quiz added!', 'success');
+    } catch { addToast('Failed to add quiz', 'error'); }
+  };
+
+  // ── Course update ──
+  const saveCourseMeta = async () => {
+    try {
+      await fetch(`${API}/courses/${course._id}`, { method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(courseForm) });
+      addToast('Course updated!', 'success');
+      setEditCourse(false);
+    } catch { addToast('Update failed', 'error'); }
+  };
+
+  const tabs = [
+    { id:'videos',      label:`🎥 Videos (${details.vids.length})` },
+    { id:'assignments', label:`📝 Assignments (${details.assigns.length})` },
+    { id:'quizzes',     label:`🧠 Quizzes (${details.quizzes.length})` },
+    ...(isTeacher ? [{ id:'settings', label:'⚙️ Settings' }] : []),
+  ];
+
+  return (
+    <div className="content">
+      {/* Back button */}
+      <button className="btn btn-ghost btn-sm" style={{ marginBottom:16 }} onClick={onBack}>
+        ← Back
+      </button>
+
+      {/* Course header */}
+      <div style={{ display:'flex', gap:16, alignItems:'flex-start', marginBottom:24 }}>
+        <div style={{
+          width:72, height:72, borderRadius:12, flexShrink:0,
+          background:`linear-gradient(135deg, ${stringToColor(course.category)}44, ${stringToColor(course.title)}22)`,
+          display:'flex', alignItems:'center', justifyContent:'center', fontSize:34
+        }}>
+          {categoryIcon(course.category)}
+        </div>
+        <div style={{ flex:1 }}>
+          <h2 style={{ marginBottom:4 }}>{course.title}</h2>
+          <div style={{ display:'flex', gap:12, alignItems:'center', flexWrap:'wrap' }}>
+            <span style={{ fontSize:13, color:'var(--text2)' }}>👨‍🏫 {course.teacher}</span>
+            <span className="badge badge-green">{course.category}</span>
+            <span style={{ color:'var(--primary2)', fontWeight:700, fontSize:13 }}>{course.price}</span>
+          </div>
+          {course.description && (
+            <p style={{ fontSize:13, color:'var(--text3)', marginTop:8, lineHeight:1.6 }}>{course.description}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="tabs-row">
+        {tabs.map(t => (
+          <button key={t.id}
+            className={`detail-tab ${tab===t.id?'active':'inactive'}`}
+            onClick={() => setTab(t.id)}
+          >{t.label}</button>
+        ))}
+      </div>
+
+      {loading ? <Spinner /> : (
+        <>
+          {/* ── Videos ── */}
+          {tab === 'videos' && (
+            <div className="fade-in">
+              {isTeacher && (
+                <div className="add-card" style={{ marginBottom:16 }}>
+                  <h4 style={{ marginBottom:12 }}>Add Lecture Video</h4>
+                  <div className="grid-3">
+                    <div>
+                      <FormInput label="Video Title *" value={videoForm.title}
+                        onChange={e=>setVideoForm(f=>({...f,title:e.target.value}))}
+                        placeholder="e.g. Introduction to React" error={vErrors.title} />
+                    </div>
+                    <div>
+                      <FormInput label="Duration" value={videoForm.duration}
+                        onChange={e=>setVideoForm(f=>({...f,duration:e.target.value}))}
+                        placeholder="e.g. 12 min" />
+                    </div>
+                    <div>
+                      <FormInput label="Video URL *" value={videoForm.videoUrl}
+                        onChange={e=>setVideoForm(f=>({...f,videoUrl:e.target.value}))}
+                        placeholder="https://youtube.com/…" error={vErrors.videoUrl} />
+                    </div>
+                  </div>
+                  <button className="btn btn-primary btn-sm" onClick={addVideo}>➕ Add Video</button>
+                </div>
+              )}
+              {details.vids.length === 0
+                ? <div className="empty"><div className="empty-icon">🎬</div><p>No videos added yet.</p></div>
+                : details.vids.map((v, i) => (
+                  <div key={v._id} className="list-item">
+                    <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                      <div style={{
+                        width:32, height:32, borderRadius:6,
+                        background:'rgba(108,99,255,.2)', display:'flex',
+                        alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0
+                      }}>{i+1}</div>
+                      <div>
+                        <div style={{ fontWeight:600, fontSize:14 }}>🎥 {v.title}</div>
+                        <div style={{ fontSize:12, color:'var(--text3)' }}>{v.duration || '—'}</div>
+                      </div>
+                    </div>
+                    {v.videoUrl && (
+                      <a href={v.videoUrl} target="_blank" rel="noreferrer"
+                        className="btn btn-ghost btn-sm">
+                        ▶ Watch
+                      </a>
+                    )}
+                  </div>
+                ))
+              }
+            </div>
+          )}
+
+          {/* ── Assignments ── */}
+          {tab === 'assignments' && (
+            <div className="fade-in">
+              {isTeacher && (
+                <div className="add-card" style={{ marginBottom:16 }}>
+                  <h4 style={{ marginBottom:12 }}>Add Assignment</h4>
+                  <div className="grid-2">
+                    <FormInput label="Title *" value={assignForm.title}
+                      onChange={e=>setAssignForm(f=>({...f,title:e.target.value}))}
+                      placeholder="Assignment title" error={aErrors.title} />
+                    <div style={{ display:'flex', gap:8 }}>
+                      <FormInput label="Points" type="number" value={assignForm.points}
+                        onChange={e=>setAssignForm(f=>({...f,points:e.target.value}))}
+                        placeholder="100" />
+                      <FormInput label="Due Date" type="date" value={assignForm.dueDate}
+                        onChange={e=>setAssignForm(f=>({...f,dueDate:e.target.value}))} />
+                    </div>
+                  </div>
+                  <FormInput label="Description" as="textarea" value={assignForm.description}
+                    onChange={e=>setAssignForm(f=>({...f,description:e.target.value}))}
+                    placeholder="Describe what students need to do…" />
+                  <button className="btn btn-primary btn-sm" onClick={addAssignment}>➕ Add Assignment</button>
+                </div>
+              )}
+              {details.assigns.length === 0
+                ? <div className="empty"><div className="empty-icon">📋</div><p>No assignments yet.</p></div>
+                : details.assigns.map(a => (
+                  <div key={a._id} className="list-item">
+                    <div>
+                      <div style={{ fontWeight:600 }}>📝 {a.title}</div>
+                      {a.description && (
+                        <div style={{ fontSize:12, color:'var(--text3)', marginTop:3 }}>{a.description}</div>
+                      )}
+                    </div>
+                    <div style={{ textAlign:'right', flexShrink:0 }}>
+                      <div style={{ fontWeight:600, color:'var(--accent)' }}>{a.points} pts</div>
+                      {a.dueDate && (
+                        <div style={{ fontSize:11, color:'var(--text3)' }}>
+                          Due: {new Date(a.dueDate).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          )}
+
+          {/* ── Quizzes ── */}
+          {tab === 'quizzes' && (
+            <div className="fade-in">
+              {isTeacher && (
+                <div className="add-card" style={{ marginBottom:16, display:'flex', gap:10, alignItems:'flex-end' }}>
+                  <FormInput label="Quiz Title *" value={quizForm.title}
+                    onChange={e=>setQuizForm({title:e.target.value})}
+                    placeholder="e.g. Module 1 Quiz"
+                    style={{ marginBottom:0 }} />
+                  <button className="btn btn-primary" style={{ flexShrink:0, marginBottom:0, height:38 }}
+                    onClick={addQuiz}>➕ Add Quiz</button>
+                </div>
+              )}
+              {details.quizzes.length === 0
+                ? <div className="empty"><div className="empty-icon">🧠</div><p>No quizzes yet.</p></div>
+                : details.quizzes.map(q => (
+                  <div key={q._id} className="list-item">
+                    <div>
+                      <div style={{ fontWeight:600 }}>🧠 {q.title}</div>
+                      <div style={{ fontSize:12, color:'var(--text3)' }}>
+                        {q.questions?.length || 0} question{(q.questions?.length||0)!==1?'s':''}
+                      </div>
+                    </div>
+                    <span className="badge badge-purple">Quiz</span>
+                  </div>
+                ))
+              }
+            </div>
+          )}
+
+          {/* ── Settings (Teacher only) ── */}
+          {tab === 'settings' && isTeacher && (
+            <div className="fade-in">
+              <div className="card" style={{ maxWidth:560 }}>
+                <h4 style={{ marginBottom:16 }}>Edit Course Details</h4>
+                <FormInput label="Course Title" value={courseForm.title}
+                  onChange={e=>setCourseForm(f=>({...f,title:e.target.value}))} />
+                <FormInput label="Description" as="textarea" value={courseForm.description}
+                  onChange={e=>setCourseForm(f=>({...f,description:e.target.value}))} />
+                <FormInput label="Price" as="select" value={courseForm.price}
+                  onChange={e=>setCourseForm(f=>({...f,price:e.target.value}))}>
+                  <option>Free</option>
+                  <option>$9.99</option>
+                  <option>$14.99</option>
+                  <option>$19.99</option>
+                  <option>$29.99</option>
+                  <option>$49.99</option>
+                </FormInput>
+                <button className="btn btn-primary" onClick={saveCourseMeta}>Save Changes</button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Helpers
+// ─────────────────────────────────────────────
+function stringToColor(str = '') {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash<<5)-hash);
+  return `hsl(${hash % 360}, 60%, 50%)`;
+}
+
+function categoryIcon(cat = '') {
+  const c = cat.toLowerCase();
+  if (c.includes('design'))   return '🎨';
+  if (c.includes('code') || c.includes('program') || c.includes('dev')) return '💻';
+  if (c.includes('math'))     return '📐';
+  if (c.includes('science'))  return '🔬';
+  if (c.includes('business')) return '💼';
+  if (c.includes('language')) return '🌐';
+  if (c.includes('music'))    return '🎵';
+  if (c.includes('photo'))    return '📸';
+  return '📚';
+}
+
+// ─────────────────────────────────────────────
+//  App Root
+// ─────────────────────────────────────────────
+function App() {
+  const { user } = useAuth();
+  const addToast  = useToast();
+
+  const [page,           setPage]           = useState('dashboard');
+  const [courses,        setCourses]        = useState([]);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [coursesLoaded,  setCoursesLoaded]  = useState(false);
+
+  const fetchCourses = useCallback(async () => {
+    try {
+      const res  = await fetch(`${API}/courses`);
+      const data = await res.json();
+      setCourses(Array.isArray(data) ? data : []);
+      setCoursesLoaded(true);
+    } catch {
+      addToast('Cannot connect to backend', 'error');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user && !coursesLoaded) fetchCourses();
+  }, [user]);
+
+  const navigate = (p) => {
+    setPage(p);
+    if ((p === 'courses' || p === 'manage') && !coursesLoaded) fetchCourses();
+  };
+
+  const openCourse = (course) => {
+    setSelectedCourse(course);
+    setPage('course-detail');
+  };
+
+  if (!user) return null; // handled by outer wrapper
+
+  const pageTitle = {
+    dashboard:     'Dashboard',
+    courses:       'Course Catalog',
+    manage:        'Manage Courses',
+    'course-detail': selectedCourse?.title || 'Course Detail',
+  }[page] || '';
+
+  return (
+    <div className="app">
+      <Sidebar page={page} navigate={navigate} />
+      <div className="main-area">
+        <Topbar
+          title={pageTitle}
+          breadcrumb={page === 'course-detail' ? 'Courses' : undefined}
+        />
+
+        {page === 'dashboard'     && <DashboardPage courses={courses} />}
+        {page === 'courses'       && <CoursesPage courses={courses} onCourseClick={openCourse} />}
+        {page === 'manage'        && user.role === 'teacher' &&
+          <ManagePage courses={courses} fetchCourses={fetchCourses} onCourseClick={openCourse} />
+        }
+        {page === 'course-detail' && selectedCourse &&
+          <CourseDetailPage course={selectedCourse} onBack={() => setPage('courses')} />
+        }
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Root Wrapper
+// ─────────────────────────────────────────────
+function Root() {
+  return (
+    <AuthProvider>
+      <ToastProvider>
+        <InnerRoot />
+      </ToastProvider>
+    </AuthProvider>
+  );
+}
+
+function InnerRoot() {
+  const { user } = useAuth();
+  return user ? <App /> : <LoginPage />;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Root />);
+</script>
+</body>
+</html>
